@@ -1,49 +1,78 @@
 import { useState, useRef, useEffect } from "react";
 import * as THREE from "three";
 import ThreeGlobe from "three-globe";
-import bgImg from "../assets/bgmap1.jpg";
-import { TrackballControls } from "three/examples/jsm/controls/TrackballControls";
+import cottonTexture from "../assets/cotton.jpg";
+import oceanTexture from "../assets/oceanTexture.png";
+import { TrackballControls } from "three/examples/jsm/controls/TrackballControls.js";
 let lat = 50;
 let lon = 50;
 export const Globe = () => {
   const globeRef = useRef<HTMLDivElement>(null);
   const frameRef = useRef<number>(0);
-  const [globe2Conf, setglobe2Conf] = useState({ lat: 50, lon: 50 });
   const [position, setPosition] = useState({ lat: 50, lon: 50 });
 
   useEffect(() => {
     const start = async () => {
       if (!globeRef.current) return;
 
-      const globe = new ThreeGlobe();
-      //apply image background to globe
-      globe
-        .globeImageUrl(
-          // "https://raw.githubusercontent.com/vasturiano/three-globe/master/example/img/earth-night.jpg"
-          bgImg
-        )
-        // .bumpImageUrl(
-        //   bgImg
-        //   // "https://raw.githubusercontent.com/vasturiano/three-globe/master/example/img/earth-topology.png"
-        // )
-        .showAtmosphere(true)
-        .atmosphereColor("rgba(100,100,100, 1)")
-        .atmosphereAltitude(0.15);
+      const GRID_SIZE = [60, 20];
 
-      // globe.showGlobe(false).showAtmosphere(false);
+      const tLoader = new THREE.TextureLoader();
+      const oceansMap = tLoader.load(oceanTexture);
+      const tileWidth = 360 / GRID_SIZE[0];
+      const tileHeight = 180 / GRID_SIZE[1];
+      const tilesData: object[] = [];
+      [...Array(GRID_SIZE[0]).keys()].forEach((lngIdx) =>
+        [...Array(GRID_SIZE[1]).keys()].forEach((latIdx) =>
+          tilesData.push({
+            lng: -180 + lngIdx * tileWidth,
+            lat: -90 + latIdx * tileHeight,
+            material: new THREE.MeshStandardMaterial({
+              map: oceansMap,
+              roughnessMap: oceansMap,
+              color: "rgb(62,151,197)",
+              metalness: 0.9,
+              roughness: 0.2,
+            }),
+          })
+        )
+      );
+
+      const globe = new ThreeGlobe();
+      globe
+        .tilesData(tilesData)
+        .tileWidth(tileWidth)
+        .tileHeight(tileHeight)
+        .tileAltitude(0.01)
+        .tileMaterial("material");
+      // .showAtmosphere(true)
+      // .atmosphereColor("rgba(22,41,53, 1)")
+      // .atmosphereAltitude(0.15);
+
+      // Load country data
       const countries = await (
         await fetch(
           "https://vasturiano.github.io/three-globe/example/country-polygons/ne_110m_admin_0_countries.geojson"
         )
       ).json();
+
+      const loader = new THREE.TextureLoader();
+      const roughnessMap = loader.load(cottonTexture);
+      const material = new THREE.MeshStandardMaterial({
+        color: "rgb(62,151,197)",
+        metalness: 0.9,
+        roughnessMap: roughnessMap,
+      });
+
       globe
         .polygonsData(
           countries.features.filter((d: any) => d.properties.ISO_A3 !== "ATA")
         )
         .polygonCapColor(() => "rgba(62,151,197,1)")
         .polygonSideColor(() => "rgba(0,0,0,1)")
-        .polygonStrokeColor(() => "rgb(5,5,5)");
-      console.log("yy");
+        .polygonStrokeColor(() => "rgb(5,5,5)")
+        .polygonCapMaterial(material)
+        .polygonAltitude(0.02);
 
       const globe2 = new ThreeGlobe();
       globe2.showGlobe(false).showAtmosphere(false);
@@ -51,18 +80,23 @@ export const Globe = () => {
         .polygonsData(
           countries.features.filter((d: any) => d.properties.ISO_A3 !== "ATA")
         )
-        .polygonCapColor(() => "rgba(0,255,255,0.5)")
+        .polygonCapColor(() => "rgba(197,62,151,0.2)")
         .polygonSideColor(() => "rgba(10,10,10,0)")
-        .polygonStrokeColor(() => "rgba(5,5,5,0.8)");
-
-      globe2.scale.set(1.01, 1.01, 1.01);
+        .polygonStrokeColor(() => "rgba(5,5,5,1)")
+        .polygonAltitude(0.03);
 
       const directionalLight = new THREE.DirectionalLight(0xccccccc, 10);
-      directionalLight.position.set(1, 1, 1); // change light position to see the specularMap's effect
+      directionalLight.position.set(1, 1, 1);
 
       // Setup renderer
-      const renderer = new THREE.WebGLRenderer();
+      const renderer = new THREE.WebGLRenderer({
+        antialias: true,
+        alpha: true,
+      });
+      renderer.setClearColor(0x000000, 0);
+
       renderer.setSize(window.innerWidth, window.innerHeight);
+      console.log("je passe ici");
       globeRef.current.appendChild(renderer.domElement);
 
       // Setup scene
@@ -84,27 +118,13 @@ export const Globe = () => {
       tbControls.rotateSpeed = 5;
       tbControls.zoomSpeed = 0.8;
 
-      // let frameTime = Date.now() / 1000;
-      // Kick-off renderer
       (function animate() {
-        // console.log(lat,lon)
-        // const now = Date.now() / 1000;
-        // const fps = 1 / (now - frameTime);
-        // if(fps<50) console.log(fps.toFixed(0))
-        // frameTime = now;
-
-        globe2.rotation.x = ((position.lat - 50) / 100) * Math.PI;
-        globe2.rotation.y = ((position.lon - 50) / 100) * Math.PI * 2;
+        globe2.rotation.x = ((lat - 50) / 100) * Math.PI;
+        globe2.rotation.y = ((lon - 50) / 100) * Math.PI * 2;
         tbControls.update();
         renderer.render(scene, camera);
         frameRef.current = requestAnimationFrame(animate);
       })();
-
-      /* setInterval(() => {
-    console.log("oo");
-    Globe.rotation.y = Math.random() * Math.PI * 2;
-
-  }, 1000);*/
     };
     start();
     return () => {
@@ -112,46 +132,47 @@ export const Globe = () => {
     };
   }, []);
 
+  useEffect(() => {
+    console.log("useeffect");
+    lat = position.lat;
+    lon = position.lon;
+  });
+
   return (
     <div>
-      <h1>
-        Globe {position.lat} {position.lon}
-      </h1>
-      <div
-        style={{
-          position: "fixed",
-          top: "0",
-          left: "0",
-          backgroundColor: "white",
-        }}
-      >
+      <div className="panel">
+        <h1>
+          Globe {position.lat} {position.lon}
+        </h1>
         <div>
-          <input
-            type="range"
-            min="0"
-            max="100"
-            value={position.lat}
-            id="lat"
-            name="lat"
-            onChange={(e: any) =>
-              setPosition({ ...position, lat: e.target.value })
-            }
-          />
-          <label htmlFor="lat">lat</label>
-        </div>
-        <div>
-          <input
-            type="range"
-            min="0"
-            max="100"
-            value={position.lon}
-            id="lon"
-            name="lon"
-            onChange={(e: any) =>
-              setPosition({ ...position, lon: e.target.value })
-            }
-          />
-          <label htmlFor="lon">lon</label>
+          <div>
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value={position.lat}
+              id="lat"
+              name="lat"
+              onChange={(e: any) =>
+                setPosition({ ...position, lat: e.target.value })
+              }
+            />
+            <label htmlFor="lat">lat</label>
+          </div>
+          <div>
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value={position.lon}
+              id="lon"
+              name="lon"
+              onChange={(e: any) =>
+                setPosition({ ...position, lon: e.target.value })
+              }
+            />
+            <label htmlFor="lon">lon</label>
+          </div>
         </div>
       </div>
 
