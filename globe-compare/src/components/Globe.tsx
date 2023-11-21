@@ -2,7 +2,8 @@ import { useState, useRef, useEffect } from "react";
 import * as THREE from "three";
 import ThreeGlobe from "three-globe";
 import cottonTexture from "../assets/cotton.jpg";
-import oceanTexture from "../assets/oceanTexture.png";
+import oceanTexture from "../assets/5027.png";
+// import oceanTexture from "../assets/oceanTexture.png";
 import { TrackballControls } from "three/examples/jsm/controls/TrackballControls.js";
 let lat = 50;
 let lon = 50;
@@ -30,9 +31,10 @@ export const Globe = () => {
             material: new THREE.MeshStandardMaterial({
               map: oceansMap,
               roughnessMap: oceansMap,
-              color: "rgb(62,151,197)",
-              metalness: 0.9,
-              roughness: 0.2,
+              color: "rgb(255,255,255)",
+              // color: "rgb(62,151,197)",
+              metalness: 0.7,
+              roughness: 0.5,
             }),
           })
         )
@@ -46,7 +48,7 @@ export const Globe = () => {
         .tileAltitude(0.01)
         .tileMaterial("material");
       // .showAtmosphere(true)
-      // .atmosphereColor("rgba(22,41,53, 1)")
+      // .atmosphereColor("whites")
       // .atmosphereAltitude(0.15);
 
       // Load country data
@@ -80,7 +82,10 @@ export const Globe = () => {
         .polygonsData(
           countries.features.filter((d: any) => d.properties.ISO_A3 !== "ATA")
         )
-        .polygonCapColor(() => "rgba(197,62,151,0.2)")
+        .polygonCapColor(
+          () =>
+            "rgba(197,62,151,0.4                                                                                                                                                                     )"
+        )
         .polygonSideColor(() => "rgba(10,10,10,0)")
         .polygonStrokeColor(() => "rgba(5,5,5,1)")
         .polygonAltitude(0.03);
@@ -101,6 +106,7 @@ export const Globe = () => {
         Math.trunc(containerSize.height)
       );
       console.log("je passe ici", containerSize);
+      globeRef.current.innerHTML = "";
       globeRef.current.appendChild(renderer.domElement);
 
       // Setup scene
