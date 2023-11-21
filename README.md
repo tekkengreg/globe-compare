@@ -1,5 +1,7 @@
-@todo
+# Globe compare
 
-- favicon
-- slider
-- github page deploy
+Tools to compare size of country over the world. Just move upon layer et how real countries size are.
+
+# Tech
+
+The project use *threejs* to display globe.
