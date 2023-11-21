@@ -95,8 +95,12 @@ export const Globe = () => {
       });
       renderer.setClearColor(0x000000, 0);
 
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      console.log("je passe ici");
+      const containerSize = globeRef.current.getBoundingClientRect();
+      renderer.setSize(
+        Math.trunc(containerSize.width),
+        Math.trunc(containerSize.height)
+      );
+      console.log("je passe ici", containerSize);
       globeRef.current.appendChild(renderer.domElement);
 
       // Setup scene
@@ -108,7 +112,7 @@ export const Globe = () => {
 
       // Setup camera
       const camera = new THREE.PerspectiveCamera();
-      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.aspect = containerSize.width / containerSize.height;
       camera.updateProjectionMatrix();
       camera.position.z = 500;
 
@@ -139,8 +143,15 @@ export const Globe = () => {
   });
 
   return (
-    <div>
-      <div className="panel">
+    <div
+      style={{
+        maxHeight: "100%",
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      <div className="panel" style={{ display: "none" }}>
         <h1>
           Globe {position.lat} {position.lon}
         </h1>
@@ -176,7 +187,61 @@ export const Globe = () => {
         </div>
       </div>
 
-      <div ref={globeRef} />
+      <div ref={globeRef} style={{ flex: "1" }} />
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          flexWrap: "wrap",
+          background: "lightgrey",
+          padding: "1rem",
+        }}
+      >
+        <div
+          style={{
+            background: "white",
+            padding: "0.4rem",
+            borderRadius: "0.6rem",
+            display: "flex",
+            margin: "0 1rem",
+          }}
+        >
+          <label htmlFor="lat">lat</label>
+          <input
+            type="range"
+            min="0"
+            max="100"
+            value={position.lat}
+            id="lat"
+            name="lat"
+            onChange={(e: any) =>
+              setPosition({ ...position, lat: e.target.value })
+            }
+          />
+        </div>
+        <div
+          style={{
+            background: "white",
+            padding: "0.4rem",
+            borderRadius: "0.6rem",
+            display: "flex",
+            margin: "0 1rem",
+          }}
+        >
+          <label htmlFor="lon">lon</label>
+          <input
+            type="range"
+            min="0"
+            max="100"
+            value={position.lon}
+            id="lon"
+            name="lon"
+            onChange={(e: any) =>
+              setPosition({ ...position, lon: e.target.value })
+            }
+          />
+        </div>
+      </div>
     </div>
   );
 };
