@@ -1,5 +1,4 @@
 import { Globe } from "./components/Globe";
-import background from "./assets/gregorypetit_dark_blue_background_e846c7b6-f13e-4fac-829a-f88bd730277f.png";
 
 function App() {
   return (
