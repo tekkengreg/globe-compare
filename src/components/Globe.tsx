@@ -40,6 +40,7 @@ export const Globe = () => {
         )
       );
 
+      // Setup main globe
       const globe = new ThreeGlobe();
       globe
         .tilesData(tilesData)
@@ -76,6 +77,7 @@ export const Globe = () => {
         .polygonCapMaterial(material)
         .polygonAltitude(0.02);
 
+      // Setup second globe used as overlay
       const globe2 = new ThreeGlobe();
       globe2.showGlobe(false).showAtmosphere(false);
       globe2
@@ -105,7 +107,6 @@ export const Globe = () => {
         Math.trunc(containerSize.width),
         Math.trunc(containerSize.height)
       );
-      console.log("je passe ici", containerSize);
       globeRef.current.innerHTML = "";
       globeRef.current.appendChild(renderer.domElement);
 
@@ -143,7 +144,6 @@ export const Globe = () => {
   }, []);
 
   useEffect(() => {
-    console.log("useeffect");
     lat = position.lat;
     lon = position.lon;
   });
@@ -157,42 +157,6 @@ export const Globe = () => {
         flexDirection: "column",
       }}
     >
-      <div className="panel" style={{ display: "none" }}>
-        <h1>
-          Globe {position.lat} {position.lon}
-        </h1>
-        <div>
-          <div>
-            <input
-              type="range"
-              min="0"
-              max="100"
-              value={position.lat}
-              id="lat"
-              name="lat"
-              onChange={(e: any) =>
-                setPosition({ ...position, lat: e.target.value })
-              }
-            />
-            <label htmlFor="lat">lat</label>
-          </div>
-          <div>
-            <input
-              type="range"
-              min="0"
-              max="100"
-              value={position.lon}
-              id="lon"
-              name="lon"
-              onChange={(e: any) =>
-                setPosition({ ...position, lon: e.target.value })
-              }
-            />
-            <label htmlFor="lon">lon</label>
-          </div>
-        </div>
-      </div>
-
       <div ref={globeRef} style={{ flex: "1" }} />
       <div
         style={{
